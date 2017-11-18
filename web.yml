@@ -1,1 +1,30 @@
-web
+---
+- hosts: "{{ target }}"
+  remote_user: ubuntu
+  become: yes
+  become_user: root
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+  vars:
+    service: api-web
+  vars_files:
+    - "group_vars/{{ env }}/{{ env }}"
+    - "group_vars/{{ env }}/{{ env }}-{{ service }}"
+  roles:
+    - {role: supervisor, when: " ( service_deployed == 'supervisor' or service_deployed  == 'all_services' )"}
+    - {role: datadog, when: " ( env == 'poc' or env == 'production' ) and ( service_deployed == 'datadog' or  service_deployed  == 'all_services' )"}
+    - {role: security_update, when: " ( service_deployed == 'security_update')"}
+    - {role: newrelic, when: " ( env == 'staging' or env == 'production' ) and ( service_deployed == 'newrelic' or  service_deployed  == 'all_services' )"}
+    - {role: monit, when: " ( service_deployed == 'monit' or service_deployed  == 'all_services' )"}
+    - {role: scoutd, when: " ( service_deployed == 'scoutd' or service_deployed  == 'all_services' )"}
+    - {role: nginx, when: " ( service_deployed == 'nginx' or  service_deployed  == 'all_services' )"}
+    - {role: ruby, when: " ( service_deployed == 'ruby' or service_deployed  == 'all_services' )"}
+    - {role: awscli, when: " ( service_deployed == 'awscli' or service_deployed  == 'all_services' )"}
+    - {role: mount_efs, when: " ( env == 'poc' or env == 'production' or env == 'staging') and ( service_deployed == 'mount_efs' or  service_deployed  == 'all_services' )"}
+    - {role: mysql_client, when: " ( service_deployed == 'mysql_client' or service_deployed  == 'all_services' )"}
+    - {role: postgresql_client, when: " ( service_deployed == 'postgresql_client' or service_deployed  == 'all_services' )"}
+    - {role: component_based_services, when: " ( service_deployed == 'component_based_services' or service_deployed  == 'all_services' )"}
+    - {role: ssh_keys_manager, when: " ( service_deployed == 'ssh_keys_manager' or service_deployed  == 'all_services' )"}
+    - {role: ssh_keys_management, when: " ( service_deployed == 'ssh_keys_management' or service_deployed  == 'all_services' )"}
+    - {role: deploy_service, when: " ( service_deployed == 'deploy_service' or service_deployed  == 'all_services' )"}
